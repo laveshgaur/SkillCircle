@@ -1,0 +1,53 @@
+# ========================
+# Planning & Design Docs (not part of source)
+# ========================
+.planning/
+
+# ========================
+# IDE & Editor
+# ========================
+.idea/
+.vscode/
+*.iml
+*.iws
+*.ipr
+.project
+.classpath
+.settings/
+
+# ========================
+# OS
+# ========================
+.DS_Store
+Thumbs.db
+
+# ========================
+# Environment
+# ========================
+.env
+.env.local
+.env.*.local
+
+# ========================
+# Java / Spring Boot
+# ========================
+target/
+*.class
+*.jar
+*.war
+*.ear
+*.log
+hs_err_pid*
+
+# ========================
+# Node / React
+# ========================
+node_modules/
+dist/
+build/
+*.local
+
+# ========================
+# Docker
+# ========================
+docker-compose.override.yml
