@@ -82,6 +82,12 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/v1/users/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/profiles/{id}").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/skills/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/spaces/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/threads/*/messages").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/presence/**").permitAll()
+
+                        // WebSocket
+                        .requestMatchers("/ws/**").permitAll()
 
                         // Admin endpoints
                         .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
