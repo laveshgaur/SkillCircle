@@ -239,7 +239,7 @@ SkillCircle/
 - [ ] Phase 3: Matching engine (core AI pipeline)
 - [ ] Phase 4: Community spaces & real-time chat
 - [ ] Phase 5: Project task boards
-- [ ] Phase 6: AI services (summarization, skill extraction)
+- [x] Phase 6: AI services (summarization, skill extraction)
 - [ ] Phase 7-8: Frontend implementation
 - [ ] Phase 9: Evaluation & benchmarking
 - [ ] Phase 10: Production deployment

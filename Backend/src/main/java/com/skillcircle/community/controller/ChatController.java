@@ -1,5 +1,6 @@
 package com.skillcircle.community.controller;
 
+import com.skillcircle.ai.service.ThreadSummarizationService;
 import com.skillcircle.auth.entity.User;
 import com.skillcircle.auth.repository.UserRepository;
 import com.skillcircle.community.dto.ChatMessage;
@@ -30,6 +31,7 @@ public class ChatController {
     private final CommunityService communityService;
     private final PresenceService presenceService;
     private final UserRepository userRepository;
+    private final ThreadSummarizationService threadSummarizationService;
 
     /**
      * Handle incoming chat messages — persist and broadcast.
@@ -60,6 +62,14 @@ public class ChatController {
 
         // Update presence
         presenceService.markOnline(senderId);
+
+        // Fire-and-forget: auto-summarize the thread if it has grown large (>50 messages).
+        // Runs on the aiTaskExecutor, so a slow LLM call never delays message delivery.
+        try {
+            threadSummarizationService.checkAutoSummarize(UUID.fromString(threadId));
+        } catch (Exception e) {
+            log.warn("Auto-summarize trigger failed for thread {}: {}", threadId, e.getMessage());
+        }
 
         log.debug("Message sent to thread {} by {}", threadId, sender.getUsername());
     }

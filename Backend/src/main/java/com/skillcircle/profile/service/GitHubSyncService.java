@@ -1,5 +1,6 @@
 package com.skillcircle.profile.service;
 
+import com.skillcircle.ai.service.SkillExtractionService;
 import com.skillcircle.auth.entity.User;
 import com.skillcircle.exception.BadRequestException;
 import com.skillcircle.profile.entity.*;
@@ -29,9 +30,13 @@ public class GitHubSyncService {
 
     private static final String GITHUB_API = "https://api.github.com";
 
+    /** Max repos whose README is fetched for deep skill extraction, to bound API rate usage. */
+    private static final int MAX_README_REPOS = 10;
+
     private final ProfileRepository profileRepository;
     private final SkillRepository skillRepository;
     private final ProfileSkillRepository profileSkillRepository;
+    private final SkillExtractionService skillExtractionService;
 
     /**
      * Sync GitHub profile data: fetch repos, extract languages/topics,
@@ -96,9 +101,60 @@ public class GitHubSyncService {
             }
         }
 
+        // Deep extraction: fetch READMEs for the most recently-updated repos and run
+        // them through the AI skill extractor (LLM, with catalog/regex fallback). Bounded
+        // to MAX_README_REPOS to stay within GitHub's unauthenticated rate limit (60/hr).
+        RestClient rawClient = RestClient.builder()
+                .baseUrl(GITHUB_API)
+                .defaultHeader("Accept", "application/vnd.github.raw")
+                .defaultHeader("User-Agent", "SkillCircle-App")
+                .build();
+        int readmeLimit = Math.min(repos.size(), MAX_README_REPOS);
+        for (int i = 0; i < readmeLimit; i++) {
+            String repoName = (String) repos.get(i).get("name");
+            if (repoName == null || repoName.isBlank()) {
+                continue;
+            }
+            String readme = fetchReadme(rawClient, githubUsername, repoName);
+            if (readme != null && !readme.isBlank()) {
+                added += addSkillsFromReadme(profile, readme);
+            }
+        }
+
         log.info("GitHub sync for {}: {} new skills added from {} repos",
                 githubUsername, added, repos.size());
 
+        return added;
+    }
+
+    /**
+     * Fetch the raw README text for a repo. Returns null when the repo has no README
+     * (404) or the request otherwise fails — never throws, so one bad repo does not
+     * abort the whole sync.
+     */
+    String fetchReadme(RestClient rawClient, String owner, String repo) {
+        try {
+            return rawClient.get()
+                    .uri("/repos/{owner}/{repo}/readme", owner, repo)
+                    .retrieve()
+                    .body(String.class);
+        } catch (Exception e) {
+            log.debug("No README for {}/{}: {}", owner, repo, e.getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * Run README text through the AI skill extractor and add every discovered skill
+     * to the profile (reusing the catalog entry when the name already exists).
+     *
+     * @return number of new skills added
+     */
+    int addSkillsFromReadme(Profile profile, String readme) {
+        int added = 0;
+        for (String skillName : skillExtractionService.extractSkillsFromReadme(readme)) {
+            added += addSkillIfNotExists(profile, skillName, SkillCategory.OTHER);
+        }
         return added;
     }
 
