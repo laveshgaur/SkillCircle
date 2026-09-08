@@ -1,0 +1,26 @@
+.wrap {
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: var(--space-sm);
+  padding: var(--space-lg);
+  background: var(--gradient-hero);
+}
+.code {
+  font-size: var(--text-6xl);
+  font-weight: var(--weight-bold);
+  letter-spacing: -0.04em;
+  margin-top: var(--space-lg);
+  color: var(--color-primary);
+}
+.title {
+  font-size: var(--text-2xl);
+}
+.text {
+  color: var(--color-text-muted);
+  max-width: 44ch;
+  margin-bottom: var(--space-md);
+}

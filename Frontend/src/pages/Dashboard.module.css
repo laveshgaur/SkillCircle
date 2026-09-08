@@ -1,0 +1,176 @@
+.stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-lg);
+  margin-bottom: var(--space-xl);
+}
+.stat {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  color: inherit;
+  text-decoration: none;
+}
+.statIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-lg);
+  flex-shrink: 0;
+}
+.statIcon--brand {
+  background: var(--color-primary-soft);
+  color: var(--color-primary-soft-text);
+}
+.statIcon--blue {
+  background: var(--info-bg);
+  color: var(--info);
+}
+.statIcon--green {
+  background: var(--success-bg);
+  color: var(--success);
+}
+.statValue {
+  font-size: var(--text-2xl);
+  font-weight: var(--weight-bold);
+  line-height: 1.1;
+}
+.statLabel {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+/* Completeness card */
+.completenessCard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-xl);
+}
+.completenessHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  color: var(--color-text);
+}
+.completenessTitle {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  flex: 1;
+}
+.completenessHint {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+}
+.completenessHint a {
+  color: var(--color-link);
+  font-weight: var(--weight-medium);
+}
+
+/* Sections */
+.section {
+  margin-top: var(--space-lg);
+}
+.sectionHead {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-lg);
+}
+.sectionTitle {
+  font-size: var(--text-xl);
+  font-weight: var(--weight-semibold);
+  flex: 1;
+}
+
+/* Steps */
+.steps {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-lg);
+}
+.stepCard {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-sm);
+  transition: opacity var(--transition);
+}
+.stepDone {
+  opacity: 0.55;
+}
+.stepDone .stepIcon {
+  background: var(--success-bg);
+  color: var(--success);
+}
+.stepIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-md);
+  background: var(--color-surface-hover);
+  color: var(--color-text);
+}
+.stepTitle {
+  font-size: var(--text-base);
+  font-weight: var(--weight-semibold);
+}
+.stepText {
+  flex: 1;
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  line-height: var(--leading-relaxed);
+  margin-bottom: var(--space-xs);
+}
+
+/* Recent matches row */
+.matchRow {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-md);
+}
+.matchCard {
+  cursor: pointer;
+}
+.matchHead {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+.matchInfo {
+  flex: 1;
+  min-width: 0;
+}
+.matchName {
+  font-weight: var(--weight-semibold);
+  font-size: var(--text-sm);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.matchMeta {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+}
+
+/* Quick actions */
+.quickActions {
+  display: flex;
+  gap: var(--space-sm);
+  flex-wrap: wrap;
+}
+
+@media (max-width: 900px) {
+  .stats,
+  .steps,
+  .matchRow {
+    grid-template-columns: 1fr;
+  }
+  .quickActions {
+    flex-direction: column;
+  }
+}

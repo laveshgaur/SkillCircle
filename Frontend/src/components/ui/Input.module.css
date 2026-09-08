@@ -1,0 +1,107 @@
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  width: 100%;
+}
+
+.label {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  color: var(--color-text);
+}
+
+.required {
+  color: var(--danger);
+  margin-inline-start: 2px;
+}
+
+.wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.control {
+  width: 100%;
+  height: 42px;
+  padding-inline: var(--space-md);
+  font-size: var(--text-sm);
+  color: var(--color-text);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  transition: border-color var(--transition) var(--ease),
+    box-shadow var(--transition) var(--ease),
+    background-color var(--transition) var(--ease);
+}
+
+.control::placeholder {
+  color: var(--color-text-subtle);
+}
+
+.control:hover:not(:disabled):not(:focus) {
+  border-color: var(--color-primary);
+}
+
+.control:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: var(--focus-ring);
+}
+
+.control:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background: var(--color-surface-2);
+}
+
+.textarea {
+  height: auto;
+  min-height: 96px;
+  padding-block: var(--space-sm);
+  resize: vertical;
+  line-height: var(--leading-normal);
+}
+
+/* Icon padding */
+.hasLeft .control {
+  padding-inline-start: 42px;
+}
+.hasRight .control {
+  padding-inline-end: 42px;
+}
+
+.icon {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-subtle);
+  pointer-events: none;
+}
+.iconLeft {
+  inset-inline-start: var(--space-md);
+}
+.iconRight {
+  inset-inline-end: var(--space-md);
+  pointer-events: auto;
+}
+
+/* Error state */
+.invalid .control {
+  border-color: var(--danger);
+}
+.invalid .control:focus {
+  box-shadow: 0 0 0 3px var(--danger-bg);
+}
+
+.help {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+}
+.error {
+  font-size: var(--text-xs);
+  color: var(--danger);
+  font-weight: var(--weight-medium);
+}

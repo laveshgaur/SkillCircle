@@ -178,12 +178,12 @@ cd SkillCircle
 docker-compose up -d
 
 # Backend
-cd backend
-cp ../env.example .env
+cd Backend
+cp ../.env.example .env
 ./mvnw spring-boot:run
 
 # Frontend (new terminal)
-cd frontend
+cd Frontend
 npm install
 npm run dev
 ```
@@ -202,7 +202,7 @@ Copy `.env.example` and configure:
 
 ```
 SkillCircle/
-├── frontend/               # React 18 + Vite SPA
+├── Frontend/               # React 18 + Vite SPA
 │   ├── src/
 │   │   ├── components/     # Reusable UI (common, layout, match, community, project)
 │   │   ├── pages/          # Route-level pages
@@ -212,7 +212,7 @@ SkillCircle/
 │   │   └── styles/         # Design system & tokens
 │   └── package.json
 │
-├── backend/                # Spring Boot 3.x API
+├── Backend/                # Spring Boot 3.x API
 │   ├── src/main/java/com/skillcircle/
 │   │   ├── auth/           # OAuth2 + JWT authentication
 │   │   ├── user/           # User & profile management
@@ -233,14 +233,14 @@ SkillCircle/
 ## 🗺️ Roadmap
 
 - [x] System design & architecture planning
-- [ ] Phase 0: Project bootstrap & infrastructure
-- [ ] Phase 1: Authentication (OAuth2 + JWT)
-- [ ] Phase 2: Profile & skill management
-- [ ] Phase 3: Matching engine (core AI pipeline)
-- [ ] Phase 4: Community spaces & real-time chat
-- [ ] Phase 5: Project task boards
+- [x] Phase 0: Project bootstrap & infrastructure
+- [x] Phase 1: Authentication (OAuth2 + JWT)
+- [x] Phase 2: Profile & skill management
+- [x] Phase 3: Matching engine (core AI pipeline)
+- [x] Phase 4: Community spaces & real-time chat
+- [x] Phase 5: Project task boards
 - [x] Phase 6: AI services (summarization, skill extraction)
-- [ ] Phase 7-8: Frontend implementation
+- [x] Phase 7-8: Frontend implementation
 - [ ] Phase 9: Evaluation & benchmarking
 - [ ] Phase 10: Production deployment
 

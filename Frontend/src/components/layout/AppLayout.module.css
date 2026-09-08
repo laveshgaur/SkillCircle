@@ -1,0 +1,80 @@
+.shell {
+  min-height: 100svh;
+  background: var(--color-bg-subtle);
+}
+
+.appbar {
+  position: sticky;
+  top: 0;
+  z-index: var(--z-nav);
+  height: var(--nav-height);
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  padding-inline: var(--space-lg);
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border-bottom: 1px solid var(--color-border);
+}
+
+.menuBtn {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-md);
+  color: var(--color-text-muted);
+}
+.menuBtn:hover {
+  background: var(--color-surface-hover);
+  color: var(--color-text);
+}
+
+.brand {
+  color: var(--color-text);
+}
+
+.spacer {
+  flex: 1;
+}
+
+.appbarActions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+.iconBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-md);
+  color: var(--color-text-muted);
+  transition: background-color var(--transition) var(--ease),
+    color var(--transition) var(--ease);
+}
+.iconBtn:hover {
+  background: var(--color-surface-hover);
+  color: var(--color-text);
+}
+
+.body {
+  display: flex;
+  align-items: flex-start;
+}
+
+.main {
+  flex: 1;
+  min-width: 0;
+  min-height: calc(100svh - var(--nav-height));
+}
+
+@media (max-width: 1024px) {
+  .menuBtn {
+    display: inline-flex;
+  }
+}

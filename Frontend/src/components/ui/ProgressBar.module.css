@@ -1,0 +1,36 @@
+.wrap {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.track {
+  flex: 1;
+  border-radius: var(--radius-full);
+  background: var(--color-surface-2);
+  overflow: hidden;
+}
+
+.fill {
+  height: 100%;
+  border-radius: var(--radius-full);
+  transition: width 0.6s var(--ease-out);
+}
+
+.fill.brand  { background: var(--gradient-brand); }
+.fill.success { background: var(--success); }
+.fill.warning { background: var(--warning); }
+.fill.danger  { background: var(--danger); }
+
+/* Sizes */
+.sm .track { height: 4px; }
+.md .track { height: 8px; }
+.lg .track { height: 12px; }
+
+.label {
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  color: var(--color-text-muted);
+  min-width: 36px;
+  text-align: right;
+}
