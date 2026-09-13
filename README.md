@@ -1,7 +1,7 @@
 <p align="center">
-  <img src="https://img.shields.io/badge/Status-In%20Development-yellow?style=for-the-badge" alt="Status" />
-  <img src="https://img.shields.io/badge/Spring%20Boot-3.x-6DB33F?style=for-the-badge&logo=springboot&logoColor=white" alt="Spring Boot" />
-  <img src="https://img.shields.io/badge/React-18-61DAFB?style=for-the-badge&logo=react&logoColor=black" alt="React" />
+  <img src="https://img.shields.io/badge/Status-Phase%208%20Complete-brightgreen?style=for-the-badge" alt="Status" />
+  <img src="https://img.shields.io/badge/Spring%20Boot-4.1-6DB33F?style=for-the-badge&logo=springboot&logoColor=white" alt="Spring Boot" />
+  <img src="https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react&logoColor=black" alt="React" />
   <img src="https://img.shields.io/badge/PostgreSQL-15-4169E1?style=for-the-badge&logo=postgresql&logoColor=white" alt="PostgreSQL" />
   <img src="https://img.shields.io/badge/Qdrant-Vector%20DB-DC382D?style=for-the-badge" alt="Qdrant" />
   <img src="https://img.shields.io/badge/License-MIT-blue?style=for-the-badge" alt="License" />
@@ -71,30 +71,53 @@ Boolean post-filters on timezone overlap, availability status, and goal type ens
 ## 🏗️ Platform Features
 
 ### 🤝 Intelligent Matching
-- Semantic profile embeddings via OpenAI / Cohere
+- Semantic profile embeddings via OpenAI text-embedding-3-small
 - ANN search over Qdrant vector database
-- GitHub-powered collaborative filtering
+- GitHub-powered collaborative filtering with co-contribution graph
 - Cold-start handling with graceful degradation
+- Accept/dismiss match actions with animated transitions
+- Match history tracking and review
+- Animated SVG score rings with breakdown (semantic/collab/goal)
 
 ### 💬 Real-Time Community Spaces
-- WebSocket-powered live chat (STOMP + SockJS)
-- Threaded discussions with typing indicators
-- Online presence tracking
+- WebSocket-powered live chat (STOMP via `@stomp/stompjs`)
+- 3-panel layout (spaces → threads → messages)
+- Threaded discussions with typing indicators (animated dots)
+- Online presence tracking (Redis sorted set)
+- Space creation, thread pinning, message compose bar
 
 ### 🤖 AI-Powered Insights
-- Automatic thread summarization (GPT-4o-mini / Gemini Flash)
-- Skill extraction from GitHub repositories
-- Smart profile enrichment
+- Automatic thread summarization (GPT-4o-mini with heuristic fallback)
+- Skill extraction from GitHub repositories (LLM → catalog → regex chain)
+- Smart profile enrichment via repo README parsing
+- Skill autocomplete with debounced search
 
 ### 📋 Project Task Boards
-- Kanban-style task management
-- Team assembly from matched collaborators
-- Project-linked community spaces
+- Drag-and-drop Kanban board (`@dnd-kit` integration)
+- Task detail modal with status transitions and assignment
+- Team member management with role hierarchy
+- Project-linked community spaces (auto-created)
+- Priority color coding (URGENT/HIGH/MEDIUM/LOW)
+
+### 👤 Developer Profiles
+- Rich profile editor with skill autocomplete
+- Profile completeness tracking (8-field score + progress bar)
+- GitHub sync for automatic skill extraction
+- LinkedIn & website URL integration
+- Availability status (OPEN/SELECTIVE/BUSY) with online presence
 
 ### 🔐 Secure Authentication
-- OAuth 2.0 (GitHub + Google)
-- JWT with refresh token rotation
-- Role-based access control
+- OAuth 2.0 (GitHub + Google) with branded buttons
+- JWT with refresh token rotation (Redis-backed)
+- Role-based access control (USER, ADMIN)
+- Protected routes with automatic redirect
+
+### 🎨 Modern Design System
+- CSS custom properties with 200+ design tokens
+- Dark/light theme toggle with system preference detection
+- Glassmorphism effects and smooth gradients
+- Responsive design (desktop → tablet → mobile)
+- Toast notifications, modals, spinners, error boundaries
 
 ---
 
@@ -102,17 +125,17 @@ Boolean post-filters on timezone overlap, availability status, and goal type ens
 
 | Layer | Technology |
 |-------|-----------|
-| **Frontend** | React 18, Vite, React Router, Zustand, Axios |
-| **Backend** | Spring Boot 3.x, Java 17, Spring Security, Spring Data JPA |
+| **Frontend** | React 19, Vite 8, React Router 7, Zustand 5, Axios |
+| **UI Kit** | CSS Modules, custom tokens.css design system, Lucide icons |
+| **Real-Time (FE)** | @stomp/stompjs (WebSocket) |
+| **Drag & Drop** | @dnd-kit/core, @dnd-kit/sortable |
+| **Backend** | Spring Boot 4.1, Java 21, Spring Security, Spring Data JPA |
 | **Database** | PostgreSQL 15+ |
 | **Cache** | Redis 7+ |
 | **Vector DB** | Qdrant (ANN search for embeddings) |
 | **AI / Embeddings** | OpenAI text-embedding-3-small, GPT-4o-mini |
-| **Real-Time** | Spring WebSocket (STOMP + SockJS) |
-| **Message Queue** | RabbitMQ |
-| **Auth** | OAuth 2.0 + JWT |
-| **Containerization** | Docker + Docker Compose |
-| **CI/CD** | GitHub Actions |
+| **Real-Time (BE)** | Spring WebSocket (STOMP + SockJS) |
+| **Auth** | OAuth 2.0 + JWT (access + refresh rotation) |
 
 ---
 
@@ -152,10 +175,6 @@ Benchmarks compare hybrid (semantic + collab) against single-stage baselines acr
            │  PostgreSQL   │    │   Qdrant    │   │    Redis    │
            │  (Primary DB) │    │ (Vector DB) │   │  (Cache)    │
            └───────────────┘    └─────────────┘   └─────────────┘
-                    │
-           ┌────────▼──────┐
-           │   RabbitMQ    │──► Embedding & Notification Workers
-           └───────────────┘
 ```
 
 ---
@@ -163,38 +182,42 @@ Benchmarks compare hybrid (semantic + collab) against single-stage baselines acr
 ## 🚀 Getting Started
 
 ### Prerequisites
-- Java 17+
+- Java 21+
 - Node.js 18+
-- Docker & Docker Compose
+- PostgreSQL 15+
+- Redis 7+
+- Qdrant (optional — matching works without it via graceful fallback)
 
-### Setup
+### Backend Setup
 
 ```bash
-# Clone the repository
-git clone https://github.com/yourusername/SkillCircle.git
-cd SkillCircle
-
-# Start infrastructure services
-docker-compose up -d
-
-# Backend
 cd Backend
 cp ../.env.example .env
+# Edit .env with your database, Redis, OAuth, and OpenAI credentials
 ./mvnw spring-boot:run
+```
 
-# Frontend (new terminal)
+The backend starts at `http://localhost:8080` with Swagger UI at `/swagger-ui.html`.
+
+### Frontend Setup
+
+```bash
 cd Frontend
 npm install
 npm run dev
 ```
 
+The frontend starts at `http://localhost:5173` and proxies API calls to the backend.
+
 ### Environment Variables
 
 Copy `.env.example` and configure:
-- `OPENAI_API_KEY` — for embedding generation
-- `GITHUB_CLIENT_ID` / `GITHUB_CLIENT_SECRET` — for OAuth
-- `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` — for OAuth
-- Database, Redis, Qdrant connection details
+- `OPENAI_API_KEY` — for embedding generation and AI services
+- `GITHUB_CLIENT_ID` / `GITHUB_CLIENT_SECRET` — for GitHub OAuth
+- `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` — for Google OAuth
+- `DB_URL`, `DB_USERNAME`, `DB_PASSWORD` — PostgreSQL connection
+- `REDIS_HOST`, `REDIS_PORT` — Redis connection
+- `QDRANT_HOST`, `QDRANT_PORT` — Qdrant connection (optional)
 
 ---
 
@@ -202,29 +225,46 @@ Copy `.env.example` and configure:
 
 ```
 SkillCircle/
-├── Frontend/               # React 18 + Vite SPA
+├── Frontend/               # React 19 + Vite 8 SPA
 │   ├── src/
-│   │   ├── components/     # Reusable UI (common, layout, match, community, project)
-│   │   ├── pages/          # Route-level pages
-│   │   ├── hooks/          # Custom React hooks
-│   │   ├── services/       # API client modules
-│   │   ├── store/          # Zustand state management
-│   │   └── styles/         # Design system & tokens
+│   │   ├── components/
+│   │   │   ├── icons/      # Custom brand icons (GitHub, Google)
+│   │   │   ├── layout/     # AppLayout, Navbar, Sidebar, PageWrapper, ErrorBoundary
+│   │   │   └── ui/         # Button, Input, Modal, Avatar, Badge, Card, Spinner,
+│   │   │                   # Select, Tabs, ProgressBar, EmptyState, Toast
+│   │   ├── lib/            # API client (Axios + JWT), WebSocket client, utilities
+│   │   ├── pages/
+│   │   │   ├── auth/       # Login, Register, OAuth Callback
+│   │   │   ├── community/  # 3-panel chat (spaces/threads/messages)
+│   │   │   ├── matches/    # Match Explorer (pipeline, filters, history)
+│   │   │   ├── profile/    # Profile editor with skill autocomplete
+│   │   │   ├── projects/   # Kanban board with drag-and-drop
+│   │   │   ├── settings/   # Account preferences
+│   │   │   ├── Dashboard.jsx
+│   │   │   └── Landing.jsx
+│   │   ├── routes/         # ProtectedRoute, PublicOnlyRoute
+│   │   ├── services/       # API modules (auth, profile, match, community, project)
+│   │   ├── store/          # Zustand stores (auth, UI)
+│   │   └── styles/         # Design tokens (tokens.css) + global styles
 │   └── package.json
 │
-├── Backend/                # Spring Boot 3.x API
+├── Backend/                # Spring Boot 4.1 API
 │   ├── src/main/java/com/skillcircle/
-│   │   ├── auth/           # OAuth2 + JWT authentication
-│   │   ├── user/           # User & profile management
-│   │   ├── matching/       # Core matching engine (3-stage pipeline)
-│   │   ├── community/      # Spaces, threads, WebSocket chat
-│   │   ├── project/        # Project boards & task management
-│   │   ├── ai/             # Summarization & skill extraction
-│   │   ├── notification/   # Event-driven notifications
+│   │   ├── auth/           # OAuth2 + JWT authentication (20 tests)
+│   │   ├── user/           # User & profile management (13 tests)
+│   │   ├── matching/       # Core matching engine — 3-stage pipeline (17 tests)
+│   │   ├── community/      # Spaces, threads, WebSocket chat (18 tests)
+│   │   ├── project/        # Project boards & task management (12 tests)
+│   │   ├── ai/             # Summarization & skill extraction (20 tests)
 │   │   └── config/         # Security, CORS, WebSocket, Redis configs
 │   └── pom.xml
 │
-├── docker-compose.yml      # PostgreSQL, Redis, Qdrant, RabbitMQ
+├── .planning/              # Architecture & design documents
+│   ├── 01_SRS.md           # Software Requirements Specification
+│   ├── 02_HLD.md           # High-Level Design
+│   ├── 03_LLD.md           # Low-Level Design
+│   └── 04_WORKFLOW_PLAN.md # Development workflow (Phases 0-10)
+│
 └── .env.example
 ```
 
@@ -234,15 +274,18 @@ SkillCircle/
 
 - [x] System design & architecture planning
 - [x] Phase 0: Project bootstrap & infrastructure
-- [x] Phase 1: Authentication (OAuth2 + JWT)
-- [x] Phase 2: Profile & skill management
-- [x] Phase 3: Matching engine (core AI pipeline)
-- [x] Phase 4: Community spaces & real-time chat
-- [x] Phase 5: Project task boards
-- [x] Phase 6: AI services (summarization, skill extraction)
-- [x] Phase 7-8: Frontend implementation
+- [x] Phase 1: Authentication (OAuth2 + JWT) — *20 tests*
+- [x] Phase 2: Profile & skill management — *13 tests*
+- [x] Phase 3: Matching engine (core AI pipeline) — *17 tests*
+- [x] Phase 4: Community spaces & real-time chat — *18 tests*
+- [x] Phase 5: Project task boards — *12 tests*
+- [x] Phase 6: AI services (summarization, skill extraction) — *20 tests*
+- [x] Phase 7: Frontend shell (design system, routing, layout)
+- [x] Phase 8: Frontend features (all pages, WebSocket chat, DnD Kanban)
 - [ ] Phase 9: Evaluation & benchmarking
 - [ ] Phase 10: Production deployment
+
+**Backend: 100 unit/integration tests** | **Frontend: 6 feature pages, 12 UI components, production build passes**
 
 ---
 

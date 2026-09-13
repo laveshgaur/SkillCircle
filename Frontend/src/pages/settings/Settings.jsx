@@ -167,7 +167,7 @@ export default function Settings() {
           </div>
           <div className={styles.row}>
             <div>
-              <div className={styles.rowLabel}><Github size={14} /> GitHub</div>
+              <div className={styles.rowLabel}><GithubIcon size={14} /> GitHub</div>
               <div className={styles.rowSub}>
                 {profile?.githubUsername
                   ? `Connected as ${profile.githubUsername}`
