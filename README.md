@@ -282,10 +282,10 @@ SkillCircle/
 - [x] Phase 6: AI services (summarization, skill extraction) — *20 tests*
 - [x] Phase 7: Frontend shell (design system, routing, layout)
 - [x] Phase 8: Frontend features (all pages, WebSocket chat, DnD Kanban)
-- [ ] Phase 9: Evaluation & benchmarking
+- [x] Phase 9: Evaluation & benchmarking — *39 tests, NDCG@10 = 0.80*
 - [ ] Phase 10: Production deployment
 
-**Backend: 100 unit/integration tests** | **Frontend: 6 feature pages, 12 UI components, production build passes**
+**Backend: 139 unit/integration tests** | **Frontend: 6 feature pages, 12 UI components, production build passes**
 
 ---
 
