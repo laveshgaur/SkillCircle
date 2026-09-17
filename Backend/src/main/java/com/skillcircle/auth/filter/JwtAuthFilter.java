@@ -1,6 +1,5 @@
 package com.skillcircle.auth.filter;
 
-import com.skillcircle.auth.service.AuthService;
 import com.skillcircle.auth.service.JwtService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -8,6 +7,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -31,9 +31,11 @@ import java.io.IOException;
 @RequiredArgsConstructor
 public class JwtAuthFilter extends OncePerRequestFilter {
 
+    private static final String BLACKLIST_PREFIX = "token_blacklist:";
+
     private final JwtService jwtService;
     private final UserDetailsService userDetailsService;
-    private final AuthService authService;
+    private final StringRedisTemplate redisTemplate;
 
     @Override
     protected void doFilterInternal(
@@ -60,7 +62,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             }
 
             // 3. Check if token is blacklisted (user logged out)
-            if (authService.isTokenBlacklisted(jwt)) {
+            if (Boolean.TRUE.equals(redisTemplate.hasKey(BLACKLIST_PREFIX + jwt))) {
                 filterChain.doFilter(request, response);
                 return;
             }

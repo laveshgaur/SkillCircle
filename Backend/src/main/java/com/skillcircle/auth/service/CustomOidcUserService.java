@@ -7,27 +7,27 @@ import com.skillcircle.auth.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
-import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
+import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserRequest;
+import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserService;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
-import org.springframework.security.oauth2.core.user.OAuth2User;
+import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Custom OAuth2 user service that handles user creation/linking for
- * GitHub and Google OAuth2 login flows.
+ * Custom OIDC user service for OpenID Connect providers (Google).
  *
- * On first login, creates a new User record. On subsequent logins,
- * returns the existing user.
+ * Google uses OIDC (not plain OAuth2), so Spring invokes OidcUserService
+ * instead of DefaultOAuth2UserService. This service mirrors the logic
+ * in OAuth2UserService: find-or-create the user, pre-generate JWT tokens,
+ * and store them in Redis for the OAuth2SuccessHandler to pick up.
  */
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class OAuth2UserService extends DefaultOAuth2UserService {
+public class CustomOidcUserService extends OidcUserService {
 
     private final UserRepository userRepository;
     private final JwtService jwtService;
@@ -36,36 +36,37 @@ public class OAuth2UserService extends DefaultOAuth2UserService {
     private static final String OAUTH_TOKEN_PREFIX = "oauth_tokens:";
 
     @Override
-    public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
-        OAuth2User oAuth2User = super.loadUser(userRequest);
+    public OidcUser loadUser(OidcUserRequest userRequest) throws OAuth2AuthenticationException {
+        OidcUser oidcUser = super.loadUser(userRequest);
 
         String registrationId = userRequest.getClientRegistration().getRegistrationId();
         AuthProvider provider = AuthProvider.valueOf(registrationId.toUpperCase());
 
-        Map<String, Object> attributes = oAuth2User.getAttributes();
+        Map<String, Object> attributes = oidcUser.getAttributes();
 
-        final String oauthId;
-        final String email;
-        final String name;
-        final String avatarUrl;
-
-        if (provider == AuthProvider.GITHUB) {
-            oauthId = String.valueOf(attributes.get("id"));
-            String rawEmail = (String) attributes.get("email");
-            name = (String) attributes.get("login");
-            avatarUrl = (String) attributes.get("avatar_url");
-
-            // GitHub may not return email in profile — use login as fallback
-            email = (rawEmail != null) ? rawEmail : name + "@github.placeholder";
-        } else { // GOOGLE
-            oauthId = (String) attributes.get("sub");
-            email = (String) attributes.get("email");
-            name = (String) attributes.get("name");
-            avatarUrl = (String) attributes.get("picture");
-        }
+        final String oauthId = (String) attributes.get("sub");
+        final String email = (String) attributes.get("email");
+        final String name = (String) attributes.get("name");
+        final String avatarUrl = (String) attributes.get("picture");
 
         // Find existing user or create new one
         User user = userRepository.findByOauthProviderAndOauthId(provider, oauthId)
+                .or(() -> {
+                    // Also check by email — user may have registered with email/password first
+                    if (email != null) {
+                        return userRepository.findByEmail(email)
+                                .map(existingUser -> {
+                                    // Link the OAuth provider to the existing account
+                                    existingUser.setOauthProvider(provider);
+                                    existingUser.setOauthId(oauthId);
+                                    if (existingUser.getAvatarUrl() == null && avatarUrl != null) {
+                                        existingUser.setAvatarUrl(avatarUrl);
+                                    }
+                                    return userRepository.saveAndFlush(existingUser);
+                                });
+                    }
+                    return java.util.Optional.empty();
+                })
                 .orElseGet(() -> createOAuthUser(provider, oauthId, email, name, avatarUrl));
 
         // Pre-generate tokens and store in Redis (picked up by OAuth2SuccessHandler)
@@ -85,23 +86,27 @@ public class OAuth2UserService extends DefaultOAuth2UserService {
         redisTemplate.opsForHash().put(tokenKey, "refreshToken", refreshToken);
         redisTemplate.expire(tokenKey, 5, TimeUnit.MINUTES);
 
-        log.info("OAuth2 user authenticated: {} via {}", user.getUsername(), provider);
+        log.info("OIDC user authenticated: {} via {}", user.getUsername(), provider);
 
-        return oAuth2User;
+        return oidcUser;
     }
 
     private User createOAuthUser(AuthProvider provider, String oauthId,
                                   String email, String name, String avatarUrl) {
         // Generate unique username if taken
-        String username = name;
+        String username = name != null ? name.replaceAll("\\s+", "_") : "user_" + oauthId;
         int counter = 1;
+        String baseUsername = username;
         while (userRepository.existsByUsername(username)) {
-            username = name + counter++;
+            username = baseUsername + counter++;
         }
 
         // Handle duplicate email from different providers
         String finalEmail = email;
-        if (userRepository.existsByEmail(email)) {
+        if (email != null && userRepository.existsByEmail(email)) {
+            finalEmail = provider.name().toLowerCase() + "_" + oauthId + "@oauth.skillcircle";
+        }
+        if (finalEmail == null) {
             finalEmail = provider.name().toLowerCase() + "_" + oauthId + "@oauth.skillcircle";
         }
 
@@ -116,7 +121,7 @@ public class OAuth2UserService extends DefaultOAuth2UserService {
                 .build();
 
         user = userRepository.saveAndFlush(user);
-        log.info("New OAuth2 user created: {} via {}", user.getUsername(), provider);
+        log.info("New OIDC user created: {} via {}", user.getUsername(), provider);
 
         return user;
     }

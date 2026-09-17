@@ -128,7 +128,13 @@ public class JwtService {
     }
 
     private SecretKey getSigningKey() {
-        byte[] keyBytes = Decoders.BASE64.decode(secretKey);
+        byte[] keyBytes;
+        try {
+            keyBytes = Decoders.BASE64URL.decode(secretKey);
+        } catch (Exception e) {
+            // Fallback: treat the secret as a raw UTF-8 string (e.g. non-base64 placeholder)
+            keyBytes = secretKey.getBytes(java.nio.charset.StandardCharsets.UTF_8);
+        }
         return Keys.hmacShaKeyFor(keyBytes);
     }
 }

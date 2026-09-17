@@ -52,18 +52,33 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
         Map<String, Object> attributes = oAuth2User.getAttributes();
         String oauthId;
+        String email;
 
         if ("github".equals(registrationId)) {
             oauthId = String.valueOf(attributes.get("id"));
+            email = (String) attributes.get("email");
         } else { // google
             oauthId = (String) attributes.get("sub");
+            email = (String) attributes.get("email");
         }
 
-        // Find the user to get the token key
+        // Find the user — try by OAuth provider+id first, then fall back to email
         com.skillcircle.auth.entity.AuthProvider provider =
                 com.skillcircle.auth.entity.AuthProvider.valueOf(registrationId.toUpperCase());
         User user = userRepository.findByOauthProviderAndOauthId(provider, oauthId)
-                .orElseThrow(() -> new ServletException("OAuth user not found after authentication"));
+                .or(() -> {
+                    if (email != null) {
+                        return userRepository.findByEmail(email);
+                    }
+                    return java.util.Optional.empty();
+                })
+                .orElse(null);
+
+        if (user == null) {
+            log.error("OAuth user not found — provider={}, oauthId={}, email={}", provider, oauthId, email);
+            response.sendRedirect(frontendUrl + "/auth/error?message=user_not_found");
+            return;
+        }
 
         // Retrieve pre-generated tokens from Redis
         String tokenKey = OAUTH_TOKEN_PREFIX + user.getId().toString();

@@ -1,7 +1,9 @@
 package com.skillcircle.config;
 
 import com.skillcircle.auth.filter.JwtAuthFilter;
+import com.skillcircle.auth.filter.HttpCookieOAuth2AuthorizationRequestRepository;
 import com.skillcircle.auth.filter.OAuth2SuccessHandler;
+import com.skillcircle.auth.service.CustomOidcUserService;
 import com.skillcircle.auth.service.CustomUserDetailsService;
 import com.skillcircle.auth.service.OAuth2UserService;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +28,8 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import lombok.extern.slf4j.Slf4j;
+
 import java.util.List;
 
 /**
@@ -38,6 +42,7 @@ import java.util.List;
  * - OAuth2 login for GitHub and Google
  * - Role-based method security enabled (@PreAuthorize)
  */
+@Slf4j
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
@@ -47,7 +52,9 @@ public class SecurityConfig {
     private final JwtAuthFilter jwtAuthFilter;
     private final CustomUserDetailsService userDetailsService;
     private final OAuth2UserService oAuth2UserService;
+    private final CustomOidcUserService customOidcUserService;
     private final OAuth2SuccessHandler oAuth2SuccessHandler;
+    private final HttpCookieOAuth2AuthorizationRequestRepository cookieAuthorizationRequestRepository;
 
     @Value("${app.cors.allowed-origins}")
     private String allowedOrigins;
@@ -98,9 +105,17 @@ public class SecurityConfig {
 
                 // OAuth2 login configuration
                 .oauth2Login(oauth2 -> oauth2
-                        .userInfoEndpoint(userInfo ->
-                                userInfo.userService(oAuth2UserService))
+                        .authorizationEndpoint(authEndpoint ->
+                                authEndpoint.authorizationRequestRepository(cookieAuthorizationRequestRepository))
+                        .userInfoEndpoint(userInfo -> userInfo
+                                .userService(oAuth2UserService)
+                                .oidcUserService(customOidcUserService))
                         .successHandler(oAuth2SuccessHandler)
+                        .failureHandler((request, response, exception) -> {
+                            log.error("OAuth2 authentication failed: {}", exception.getMessage());
+                            response.sendRedirect(allowedOrigins.split(",")[0]
+                                    + "/auth/error?message=" + exception.getMessage());
+                        })
                 )
 
                 // Add JWT filter before UsernamePasswordAuthenticationFilter
