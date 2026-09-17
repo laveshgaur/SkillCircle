@@ -1,9 +1,10 @@
 <p align="center">
-  <img src="https://img.shields.io/badge/Status-Phase%208%20Complete-brightgreen?style=for-the-badge" alt="Status" />
+  <img src="https://img.shields.io/badge/Status-Live-brightgreen?style=for-the-badge" alt="Status" />
   <img src="https://img.shields.io/badge/Spring%20Boot-4.1-6DB33F?style=for-the-badge&logo=springboot&logoColor=white" alt="Spring Boot" />
   <img src="https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react&logoColor=black" alt="React" />
   <img src="https://img.shields.io/badge/PostgreSQL-15-4169E1?style=for-the-badge&logo=postgresql&logoColor=white" alt="PostgreSQL" />
   <img src="https://img.shields.io/badge/Qdrant-Vector%20DB-DC382D?style=for-the-badge" alt="Qdrant" />
+  <img src="https://img.shields.io/badge/Vercel-Deployed-000?style=for-the-badge&logo=vercel&logoColor=white" alt="Vercel" />
   <img src="https://img.shields.io/badge/License-MIT-blue?style=for-the-badge" alt="License" />
 </p>
 
@@ -12,6 +13,10 @@
 ### AI-Driven Developer Collaboration Platform
 
 > *Find your perfect project partner in minutes, not days. SkillCircle understands what you know, what you want to build, and who you work best with.*
+
+<p align="center">
+  <a href="https://skillcircle.laveshgaur.com"><strong>🌐 Live Demo — skillcircle.laveshgaur.com</strong></a>
+</p>
 
 ---
 
@@ -124,7 +129,7 @@ Boolean post-filters on timezone overlap, availability status, and goal type ens
 ## 🛠️ Tech Stack
 
 | Layer | Technology |
-|-------|-----------|
+|-------|-----------:|
 | **Frontend** | React 19, Vite 8, React Router 7, Zustand 5, Axios |
 | **UI Kit** | CSS Modules, custom tokens.css design system, Lucide icons |
 | **Real-Time (FE)** | @stomp/stompjs (WebSocket) |
@@ -135,7 +140,8 @@ Boolean post-filters on timezone overlap, availability status, and goal type ens
 | **Vector DB** | Qdrant (ANN search for embeddings) |
 | **AI / Embeddings** | OpenAI text-embedding-3-small, GPT-4o-mini |
 | **Real-Time (BE)** | Spring WebSocket (STOMP + SockJS) |
-| **Auth** | OAuth 2.0 + JWT (access + refresh rotation) |
+| **Auth** | OAuth 2.0 (GitHub + Google) + JWT (access + refresh rotation) |
+| **Deployment** | Vercel (frontend), VPS (backend), Nginx (reverse proxy) |
 
 ---
 
@@ -156,30 +162,59 @@ Benchmarks compare hybrid (semantic + collab) against single-stage baselines acr
 ## 🏛️ Architecture Overview
 
 ```
-                         ┌──────────────┐
-                         │    Nginx     │
-                         │  (Reverse    │
-                         │   Proxy)     │
-                         └──────┬───────┘
-                                │
-                   ┌────────────┴────────────┐
-                   │                         │
-          ┌────────▼────────┐      ┌────────▼────────┐
-          │   React SPA     │      │  Spring Boot    │
-          │   (Vite)        │      │  API + WebSocket│
-          └─────────────────┘      └───────┬─────────┘
-                                           │
-                    ┌──────────────────────┬┴──────────────┐
-                    │                      │               │
-           ┌────────▼──────┐    ┌─────────▼───┐   ┌──────▼──────┐
-           │  PostgreSQL   │    │   Qdrant    │   │    Redis    │
-           │  (Primary DB) │    │ (Vector DB) │   │  (Cache)    │
-           └───────────────┘    └─────────────┘   └─────────────┘
+                    ┌─────────────────────┐
+                    │   Vercel CDN        │
+                    │   (Frontend SPA)    │
+                    │   skillcircle.      │
+                    │   laveshgaur.com    │
+                    └──────────┬──────────┘
+                               │ API calls
+                               ▼
+                    ┌─────────────────────┐
+                    │   VPS + Nginx       │
+                    │   (Reverse Proxy)   │
+                    └──────────┬──────────┘
+                               │
+                    ┌──────────▼──────────┐
+                    │   Spring Boot API   │
+                    │   + WebSocket       │
+                    └──────────┬──────────┘
+                               │
+          ┌────────────────────┼────────────────────┐
+          │                    │                     │
+┌─────────▼────────┐  ┌───────▼───────┐  ┌─────────▼────────┐
+│   PostgreSQL     │  │    Qdrant     │  │     Redis        │
+│   (Primary DB)   │  │  (Vector DB)  │  │   (Cache/JWT)    │
+└──────────────────┘  └───────────────┘  └──────────────────┘
 ```
 
 ---
 
-## 🚀 Getting Started
+## 🌐 Deployment
+
+| Component | Platform | URL |
+|-----------|----------|-----|
+| **Frontend** | Vercel | [skillcircle.laveshgaur.com](https://skillcircle.laveshgaur.com) |
+| **Backend API** | VPS | Proxied via Nginx |
+| **Database** | VPS | PostgreSQL 15+ |
+| **Cache** | VPS | Redis 7+ |
+| **Vector DB** | VPS | Qdrant |
+
+### Vercel Environment Variables
+
+Set these in **Vercel Dashboard → Settings → Environment Variables**:
+
+| Variable | Description |
+|----------|-------------|
+| `VITE_API_URL` | Backend API URL (e.g., `https://api.yourdomain.com/api/v1`) |
+
+### Backend Environment Variables
+
+Copy `Backend/.env.example` to `Backend/.env` and configure all values. See the [.env.example](Backend/.env.example) for the full list.
+
+---
+
+## 🚀 Getting Started (Local Development)
 
 ### Prerequisites
 - Java 21+
@@ -192,9 +227,9 @@ Benchmarks compare hybrid (semantic + collab) against single-stage baselines acr
 
 ```bash
 cd Backend
-cp ../.env.example .env
+cp .env.example .env
 # Edit .env with your database, Redis, OAuth, and OpenAI credentials
-./mvnw spring-boot:run
+mvn spring-boot:run
 ```
 
 The backend starts at `http://localhost:8080` with Swagger UI at `/swagger-ui.html`.
@@ -203,21 +238,44 @@ The backend starts at `http://localhost:8080` with Swagger UI at `/swagger-ui.ht
 
 ```bash
 cd Frontend
+cp .env.example .env
+# Edit .env if needed (defaults to http://localhost:8080/api/v1)
 npm install
 npm run dev
 ```
 
-The frontend starts at `http://localhost:5173` and proxies API calls to the backend.
+The frontend starts at `http://localhost:5173`.
 
 ### Environment Variables
 
-Copy `.env.example` and configure:
-- `OPENAI_API_KEY` — for embedding generation and AI services
-- `GITHUB_CLIENT_ID` / `GITHUB_CLIENT_SECRET` — for GitHub OAuth
-- `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` — for Google OAuth
-- `DB_URL`, `DB_USERNAME`, `DB_PASSWORD` — PostgreSQL connection
-- `REDIS_HOST`, `REDIS_PORT` — Redis connection
-- `QDRANT_HOST`, `QDRANT_PORT` — Qdrant connection (optional)
+#### Backend (`Backend/.env`)
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `SERVER_PORT` | Server port | `8080` |
+| `DB_URL` | PostgreSQL JDBC URL | `jdbc:postgresql://localhost:5432/skillcircle` |
+| `DB_USERNAME` | Database username | `postgres` |
+| `DB_PASSWORD` | Database password | — |
+| `REDIS_HOST` | Redis hostname | `localhost` |
+| `REDIS_PORT` | Redis port | `6379` |
+| `JWT_SECRET` | Base64-encoded 256-bit key (`openssl rand -base64 32`) | — |
+| `JWT_ACCESS_EXPIRY` | Access token TTL (ms) | `900000` (15 min) |
+| `JWT_REFRESH_EXPIRY` | Refresh token TTL (ms) | `604800000` (7 days) |
+| `GITHUB_CLIENT_ID` | GitHub OAuth app client ID | — |
+| `GITHUB_CLIENT_SECRET` | GitHub OAuth app client secret | — |
+| `GOOGLE_CLIENT_ID` | Google OAuth client ID | — |
+| `GOOGLE_CLIENT_SECRET` | Google OAuth client secret | — |
+| `CORS_ORIGINS` | Allowed frontend origins (comma-separated) | `http://localhost:5173` |
+| `OPENAI_API_KEY` | OpenAI API key for embeddings & chat | — |
+| `OPENAI_EMBEDDING_MODEL` | Embedding model | `text-embedding-3-small` |
+| `QDRANT_URL` | Qdrant server URL | `http://localhost:6333` |
+| `QDRANT_COLLECTION` | Qdrant collection name | `skillcircle_profiles` |
+
+#### Frontend (`Frontend/.env`)
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `VITE_API_URL` | Backend API base URL | `http://localhost:8080/api/v1` |
 
 ---
 
@@ -225,47 +283,54 @@ Copy `.env.example` and configure:
 
 ```
 SkillCircle/
-├── Frontend/               # React 19 + Vite 8 SPA
+├── Frontend/                 # React 19 + Vite 8 SPA (Vercel)
 │   ├── src/
 │   │   ├── components/
-│   │   │   ├── icons/      # Custom brand icons (GitHub, Google)
-│   │   │   ├── layout/     # AppLayout, Navbar, Sidebar, PageWrapper, ErrorBoundary
-│   │   │   └── ui/         # Button, Input, Modal, Avatar, Badge, Card, Spinner,
-│   │   │                   # Select, Tabs, ProgressBar, EmptyState, Toast
-│   │   ├── lib/            # API client (Axios + JWT), WebSocket client, utilities
+│   │   │   ├── icons/        # Custom brand icons (GitHub, Google)
+│   │   │   ├── layout/       # AppLayout, Navbar, Sidebar, PageWrapper, ErrorBoundary
+│   │   │   └── ui/           # Button, Input, Modal, Avatar, Badge, Card, Spinner,
+│   │   │                     # Select, Tabs, ProgressBar, EmptyState, Toast
+│   │   ├── lib/              # API client (Axios + JWT), WebSocket client, utilities
 │   │   ├── pages/
-│   │   │   ├── auth/       # Login, Register, OAuth Callback
-│   │   │   ├── community/  # 3-panel chat (spaces/threads/messages)
-│   │   │   ├── matches/    # Match Explorer (pipeline, filters, history)
-│   │   │   ├── profile/    # Profile editor with skill autocomplete
-│   │   │   ├── projects/   # Kanban board with drag-and-drop
-│   │   │   ├── settings/   # Account preferences
+│   │   │   ├── auth/         # Login, Register, OAuth Callback
+│   │   │   ├── community/    # 3-panel chat (spaces/threads/messages)
+│   │   │   ├── matches/      # Match Explorer (pipeline, filters, history)
+│   │   │   ├── profile/      # Profile editor with skill autocomplete
+│   │   │   ├── projects/     # Kanban board with drag-and-drop
+│   │   │   ├── settings/     # Account preferences
 │   │   │   ├── Dashboard.jsx
 │   │   │   └── Landing.jsx
-│   │   ├── routes/         # ProtectedRoute, PublicOnlyRoute
-│   │   ├── services/       # API modules (auth, profile, match, community, project)
-│   │   ├── store/          # Zustand stores (auth, UI)
-│   │   └── styles/         # Design tokens (tokens.css) + global styles
+│   │   ├── routes/           # ProtectedRoute, PublicOnlyRoute
+│   │   ├── services/         # API modules (auth, profile, match, community, project)
+│   │   ├── store/            # Zustand stores (auth, UI)
+│   │   └── styles/           # Design tokens (tokens.css) + global styles
+│   ├── .env.example          # Frontend env template
+│   ├── vercel.json           # SPA rewrite rules for Vercel
 │   └── package.json
 │
-├── Backend/                # Spring Boot 4.1 API
+├── Backend/                  # Spring Boot 4.1 API (VPS)
 │   ├── src/main/java/com/skillcircle/
-│   │   ├── auth/           # OAuth2 + JWT authentication (20 tests)
-│   │   ├── user/           # User & profile management (13 tests)
-│   │   ├── matching/       # Core matching engine — 3-stage pipeline (17 tests)
-│   │   ├── community/      # Spaces, threads, WebSocket chat (18 tests)
-│   │   ├── project/        # Project boards & task management (12 tests)
-│   │   ├── ai/             # Summarization & skill extraction (20 tests)
-│   │   └── config/         # Security, CORS, WebSocket, Redis configs
+│   │   ├── auth/             # OAuth2 + JWT authentication (20 tests)
+│   │   ├── profile/          # User profile management
+│   │   ├── matching/         # Core matching engine — 3-stage pipeline (17 tests)
+│   │   ├── community/        # Spaces, threads, WebSocket chat (18 tests)
+│   │   ├── project/          # Project boards & task management (12 tests)
+│   │   ├── ai/               # Summarization & skill extraction (20 tests)
+│   │   ├── config/           # Security, CORS, WebSocket, Redis configs
+│   │   ├── common/           # Shared utilities and base classes
+│   │   └── exception/        # Global exception handling
+│   ├── src/main/resources/
+│   │   └── application.properties  # Config (reads from .env)
+│   ├── .env.example          # Backend env template
 │   └── pom.xml
 │
-├── .planning/              # Architecture & design documents
-│   ├── 01_SRS.md           # Software Requirements Specification
-│   ├── 02_HLD.md           # High-Level Design
-│   ├── 03_LLD.md           # Low-Level Design
-│   └── 04_WORKFLOW_PLAN.md # Development workflow (Phases 0-10)
+├── .planning/                # Architecture & design documents
+│   ├── 01_SRS.md             # Software Requirements Specification
+│   ├── 02_HLD.md             # High-Level Design
+│   ├── 03_LLD.md             # Low-Level Design
+│   └── 04_WORKFLOW_PLAN.md   # Development workflow (Phases 0-10)
 │
-└── .env.example
+└── README.md
 ```
 
 ---
@@ -283,7 +348,7 @@ SkillCircle/
 - [x] Phase 7: Frontend shell (design system, routing, layout)
 - [x] Phase 8: Frontend features (all pages, WebSocket chat, DnD Kanban)
 - [x] Phase 9: Evaluation & benchmarking — *39 tests, NDCG@10 = 0.80*
-- [ ] Phase 10: Production deployment
+- [x] Phase 10: Production deployment (Vercel + VPS)
 
 **Backend: 139 unit/integration tests** | **Frontend: 6 feature pages, 12 UI components, production build passes**
 
@@ -308,5 +373,6 @@ This project is licensed under the MIT License — see the [LICENSE](LICENSE) fi
 ---
 
 <p align="center">
-  <b>SkillCircle</b> — Intelligent collaboration starts here.
+  <b>SkillCircle</b> — Intelligent collaboration starts here.<br/>
+  <a href="https://skillcircle.laveshgaur.com">skillcircle.laveshgaur.com</a>
 </p>
